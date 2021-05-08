@@ -1,0 +1,16 @@
+const BOX_ORANGE = 6;
+const BOX_RED = 7;
+const BOX_BLUE = 8;
+const BOX_GREEN = 9;
+const BOX_GREY = 10;
+
+const SWITCH_ORANGE = 25;
+const SWITCH_RED = 38;
+const SWITCH_BLUE = 51;
+const SWITCH_GREEN = 64;
+const SWITCH_GREY = 77;
+
+export {
+    BOX_ORANGE, BOX_RED, BOX_BLUE, BOX_GREEN, BOX_GREY,
+    SWITCH_ORANGE, SWITCH_RED, SWITCH_BLUE, SWITCH_GREEN, SWITCH_GREY
+};
