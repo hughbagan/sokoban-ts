@@ -132,7 +132,7 @@ export default class Game extends Phaser.Scene
         this.switchesCoveredByColor[color] += change;
         if (change > 0) {
             this.sound.play('confirmation', {
-                volume: 0.5
+                volume: 0.3
             });
         }
     }
@@ -378,16 +378,16 @@ export default class Game extends Phaser.Scene
         const justUp = Phaser.Input.Keyboard.JustDown(this.cursors.up);
         const justDown = Phaser.Input.Keyboard.JustDown(this.cursors.down);
         if (!this.tweens.isTweening(this.player)) {
-            if (justLeft) {
+            if (justLeft || this.cursors.left.isDown) {
                 this.player?.anims.play('left', true);
                 this.movePlayer('left', -32, 32, '-=64', '-=0');
-            } else if (justRight) {
+            } else if (justRight || this.cursors.right.isDown) {
                 this.player?.anims.play('right', true);
                 this.movePlayer('right', 96, 32, '+=64', '-=0');
-            } else if (justUp) {
+            } else if (justUp || this.cursors.up.isDown) {
                 this.player?.anims.play('up', true);
                 this.movePlayer('up', 32, -32, '-=0', '-=64');
-            } else if (justDown) {
+            } else if (justDown || this.cursors.down.isDown) {
                 this.player?.anims.play('down', true);
                 this.movePlayer('down', 32, 96, '+=0', '+=64');
             } else if (this.player?.anims.isPlaying) {
