@@ -13,7 +13,8 @@ export default class Game extends Phaser.Scene
     private switchesCoveredByColor: { [key:number]: number } = {};
     private movesCount = 0;
 
-    private currentLevel = 0; // assigned in create()
+    private currentLevel = 0; // re-assigned below
+
 
 	constructor()
 	{
@@ -21,19 +22,23 @@ export default class Game extends Phaser.Scene
 	}
 
 
-    init()
+    init(d: { level:number })
     {
+        const data = Object.assign({ level:1 }, d); // In lieu of a default argument
+        this.currentLevel = data.level;
         this.movesCount = 0;
     }
 
 
 	preload()
     {
+        this.load.tilemapTiledJSON('tilemap', `assets/levels/level${this.currentLevel}.json`);
+
         this.load.spritesheet('tiles', 'assets/sokoban_tilesheet.png', {
             frameWidth: 64,
             startFrame: 0
         });
-
+        
         this.cursors = this.input.keyboard.createCursorKeys();
     }
 
@@ -41,19 +46,23 @@ export default class Game extends Phaser.Scene
     create(d: { level:number })
     {
         // LEVEL
-        const data = Object.assign({ level:1 }, d); // In lieu of a default argument
-        this.currentLevel = data.level;
-        const level = levels.getLevel(this.currentLevel);
-        const map = this.make.tilemap({
-            data: level,
-            tileWidth: 64,
-            tileHeight: 64
-        });
-        const tiles = map.addTilesetImage('tiles');
-        this.layer = map.createLayer(0, tiles, 0, 0);
+        // const data = Object.assign({ level:1 }, d); // In lieu of a default argument
+        // this.currentLevel = data.level;
+        // const level = levels.getLevel(this.currentLevel);
+        // const map = this.make.tilemap({
+        //     data: level,
+        //     tileWidth: 64,
+        //     tileHeight: 64
+        // });
+
+        const map = this.make.tilemap({ key: 'tilemap' });
+        // "sokoban" is the name of the tileset in Tiled
+        const tiles = map.addTilesetImage('sokoban', 'tiles');
+        // "Level" is the name of the layer in Tiled
+        this.layer = map.createLayer('Level', tiles, 0, 0);
         
         // PLAYER
-        this.player = this.layer.createFromTiles(52, 0, {key:'tiles', frame:52}).pop();
+        this.player = this.layer.createFromTiles(53, 0, {key:'tiles', frame:52}).pop();
         this.player?.setOrigin(0);
         this.anims.create({
             key: 'idle',
@@ -88,6 +97,12 @@ export default class Game extends Phaser.Scene
         this.extractBoxes(this.layer);
 
         // text for movesCount or allSwitchesCovered would go here!
+
+        // Listen for the scene shutdown / cleanup, and delete the map
+        this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+            this.cache.tilemap.remove('tilemap');
+            this.sound.stopByKey('error');
+        });
     }
 
 
@@ -101,7 +116,7 @@ export default class Game extends Phaser.Scene
             Colors.BOX_GREY
         ];
         boxColors.forEach(color => {
-            this.boxesByColor[color] = layer.createFromTiles(color, 0, {key:'tiles', frame:color})
+            this.boxesByColor[color] = layer.createFromTiles(color+1, 0, {key:'tiles', frame:color})
                 .map(box => box.setOrigin(0));
             const switchColor = boxToSwitchColor(color);
             this.switchesCoveredByColor[switchColor] = 0;
@@ -115,6 +130,11 @@ export default class Game extends Phaser.Scene
             this.switchesCoveredByColor[color] = 0;
         }
         this.switchesCoveredByColor[color] += change;
+        if (change > 0) {
+            this.sound.play('confirmation', {
+                volume: 0.5
+            });
+        }
     }
 
 
@@ -155,7 +175,8 @@ export default class Game extends Phaser.Scene
         if (!tile) {
             return false;
         }
-        return tile.index === tileIndex;
+        // + 1 to account for Tiled...
+        return tile.index === tileIndex + 1;
     }
 
 
@@ -248,7 +269,7 @@ export default class Game extends Phaser.Scene
                 targets: box,
                 x: tweenX,
                 y: tweenY,
-                duration: 500,
+                duration: 375,
                 onComplete: () => {
                     // Check whether the box is over a same-colored switch
                     const coveredSwitch = this.isTileAt(box.x, box.y, switchColor);
@@ -268,6 +289,11 @@ export default class Game extends Phaser.Scene
             });
         }
         // Move the player
+        this.sound.play('error', {
+            loop: true,
+            volume: 0.1,
+            rate: 2
+        });
         this.tweens.add({
             targets: this.player,
             x: goto.x,
@@ -277,6 +303,7 @@ export default class Game extends Phaser.Scene
                 this.player?.anims?.pause(this.player?.anims?.currentFrame);
                 this.movesCount += 1;
                 console.log(this.movesCount);
+                this.sound.stopByKey('error');
             }
         });
     }
