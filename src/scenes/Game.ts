@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import * as Colors from '../consts/Color';
-import { boxToSwitchColor, switchToBoxColor } from '../utils/ColorUtils';
+import { boxToSwitchColor, switchToBoxColor, bigBoxPartner } from '../utils/ColorUtils';
 
 import { sharedInstance as levels } from '../levels/LevelService';
 
@@ -115,7 +115,13 @@ export default class Game extends Phaser.Scene
             Colors.BOX_GREEN,
             Colors.BOX_GREY
         ];
+        // Also extract wide and tall boxes
+        for (const big in Colors.Big) {
+            boxColors.push(Colors.Big[big]);
+        }
+        console.dir(boxColors);
         boxColors.forEach(color => {
+            console.log(color+1);
             this.boxesByColor[color] = layer.createFromTiles(color+1, 0, {key:'tiles', frame:color})
                 .map(box => box.setOrigin(0));
             const switchColor = boxToSwitchColor(color);
@@ -168,6 +174,7 @@ export default class Game extends Phaser.Scene
 
     private isTileAt(x:number, y:number, tileIndex:number)
     {
+        // NOTE: CAN'T BE USED TO CHECK FOR BOXES! (use getBoxAt)
         if (!this.layer) {
             return false;
         }
@@ -217,6 +224,30 @@ export default class Game extends Phaser.Scene
     }
 
 
+    private offsetPosition(x:number, y:number, direction:String)
+    {
+        let newX = x;
+        let newY = y;
+        switch (direction) {
+            case 'left':
+                newX -= 64;
+                break;
+            case 'right':
+                newX += 64;
+                break;                
+            case 'up':
+                newY -= 64;
+                break;
+            case 'down':
+                newY += 64;
+                break;
+            default:
+                break;
+        }
+        return [newX, newY];
+    }
+
+
     private movePlayer(direction:String, playerXOffset:number, playerYOffset:number, tweenX, tweenY)
     {
         if (!this.player) {
@@ -234,58 +265,71 @@ export default class Game extends Phaser.Scene
         let targetY = this.player.y+playerYOffset;
         const boxData = this.getBoxAt(targetX, targetY);
         if (boxData) {
-            const box = boxData.box;
+            const targets = [boxData.box];
             const boxColor = boxData.color;
-            const switchColor = boxToSwitchColor(boxColor);
-            // Make sure the box isn't against a wall
-            switch (direction) {
-                case 'left':
-                    targetX -= 64;
-                    break;
-                case 'right':
-                    targetX += 64;                
-                    break;
-                case 'up':
-                    targetY -= 64;
-                    break;
-                case 'down':
-                    targetY += 64;
-                    break;
-                default:
-                    break;
+            // Recognize wide and tall boxes
+            const lookingFor = bigBoxPartner(boxColor);
+            for (let color in Colors.Big) {
+                if (Colors.Big[color] === boxColor) {
+                    const offsets = [ [-64, 0], [64, 0], [0, -64], [0, 64] ];
+                    offsets.forEach(coord => {
+                        const otherHalf = this.getBoxAt(targetX+coord[0], targetY+coord[1]);
+                        if (otherHalf) {
+                            if (otherHalf.color === lookingFor) {
+                                targets.push(otherHalf.box);
+                                console.dir(targets);    
+                            }
+                        }
+                    });
+                }
             }
-            if (this.isWallAt(targetX, targetY) || this.getBoxAt(targetX, targetY)) {
-                // We're trying to push a box that's already
-                // against a wall or box.
-                return false;
-            }
+            console.dir(targets);
+            // Make sure the box isn't against a wall or another box
+            const twoTilesOver = this.offsetPosition(targetX, targetY, direction);
+            const twoTilesOverX = twoTilesOver[0];
+            const twoTilesOverY = twoTilesOver[1];
+            if (targets.length === 1) {
+                if (this.isWallAt(twoTilesOverX, twoTilesOverY) || this.getBoxAt(twoTilesOverX, twoTilesOverY)) {
+                    return false;
+                }
+            } 
+            // else if (targets.length === 2) {
+            //     // TODO handle big box collision handling
+            //     const threeTilesOver = this.offsetPosition(twoTilesOverX, twoTilesOverY)
+            //     if (this.getBoxAt(twoTilesOverX, twoTilesOverY)) {
+
+            //     }
+            // }
+            
             // Is the box already covering a same-colored switch?
-            const coveredSwitch = this.isTileAt(box.x, box.y, switchColor);
+            const switchColor = boxToSwitchColor(boxColor);
+            const coveredSwitch = this.isTileAt(targets[0].x, targets[0].y, switchColor);
             if (coveredSwitch) {
                 this.changeSwitchCoveredCount(switchColor, -1);
             }
-            // Move the box
-            this.tweens.add({
-                targets: box,
-                x: tweenX,
-                y: tweenY,
-                duration: 375,
-                onComplete: () => {
-                    // Check whether the box is over a same-colored switch
-                    const coveredSwitch = this.isTileAt(box.x, box.y, switchColor);
-                    if (coveredSwitch) {
-                        this.changeSwitchCoveredCount(switchColor, 1);
-                    }
-                    console.dir(this.allSwitchesCovered());
-                    if (this.allSwitchesCovered()) {
-                        // Level complete! Start next level
-                        if (this.currentLevel < levels.getNumLevels()) {
-                            this.scene.start('game', { level: this.currentLevel+1 })
-                        } else {
-                            console.log('No more levels');
+            // Move the box(es)
+            targets.forEach(box => {
+                this.tweens.add({
+                    targets: box,
+                    x: tweenX,
+                    y: tweenY,
+                    duration: 375,
+                    onComplete: () => {
+                        // Check whether the box is over a same-colored switch
+                        const coveredSwitch = this.isTileAt(box.x, box.y, switchColor);
+                        if (coveredSwitch) {
+                            this.changeSwitchCoveredCount(switchColor, 1);
+                        }
+                        if (this.allSwitchesCovered()) {
+                            // Level complete! Start next level
+                            if (this.currentLevel < levels.getNumLevels()) {
+                                this.scene.start('game', { level: this.currentLevel+1 })
+                            } else {
+                                console.log('No more levels');
+                            }
                         }
                     }
-                }
+                });
             });
         }
         // Move the player
@@ -306,45 +350,6 @@ export default class Game extends Phaser.Scene
                 this.sound.stopByKey('error');
             }
         });
-    }
-
-
-    private moveBox(direction:String, playerXOffset:number, playerYOffset:number, tweenX, tweenY)
-    {
-        if (!this.player) {
-            return;
-        }
-        let targetX = this.player.x+playerXOffset;
-        let targetY = this.player.y+playerYOffset;
-        const box = this.getBoxAt(targetX, targetY);
-        if (box) {
-            // Make sure box isn't against a wall
-            switch (direction) {
-                case 'left':
-                    targetX -= 64;
-                    break;
-                case 'right':
-                    targetX += 64;                
-                    break;
-                case 'up':
-                    targetY -= 64;
-                    break;
-                case 'down':
-                    targetY += 64;
-                    break;
-                default:
-                    break;
-            }
-            if (!this.isWallAt(targetX, targetY)) {
-                // Move the box
-                this.tweens.add({
-                    targets: box,
-                    x: tweenX,
-                    y: tweenY,
-                    duration: 400
-                });    
-            }
-        }
     }
 
 

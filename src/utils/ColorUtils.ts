@@ -1,9 +1,12 @@
 import * as Color from "../consts/Color";
 
+
 const boxToSwitchColor = (boxColor: number) => {
     switch (boxColor) {
         default: // could cause a bug
         case Color.BOX_ORANGE:
+        case Color.Big.ORANGE_1:
+        case Color.Big.ORANGE_2:
             return Color.SWITCH_ORANGE;
         case Color.BOX_RED:
             return Color.SWITCH_RED;
@@ -16,7 +19,9 @@ const boxToSwitchColor = (boxColor: number) => {
     }
 };
 
+
 const switchToBoxColor = (switchColor: number) => {
+    /* TODO: Convert to long box? */
     switch (switchColor) {
         default:
         case Color.SWITCH_ORANGE:
@@ -32,6 +37,19 @@ const switchToBoxColor = (switchColor: number) => {
     }
 };
 
+
+const bigBoxPartner = (boxColor: number) => {
+    switch (boxColor) {
+        case Color.Big.ORANGE_1:
+            return Color.Big.ORANGE_2;
+        case Color.Big.ORANGE_2:
+            return Color.Big.ORANGE_1;
+        default: // boxColor isn't a wide or tall box...
+            return -1;
+    }
+};
+
+
 export {
-    boxToSwitchColor, switchToBoxColor
-}
+    boxToSwitchColor, switchToBoxColor, bigBoxPartner
+};
