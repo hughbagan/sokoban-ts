@@ -119,9 +119,7 @@ export default class Game extends Phaser.Scene
         for (const big in Colors.Big) {
             boxColors.push(Colors.Big[big]);
         }
-        console.dir(boxColors);
         boxColors.forEach(color => {
-            console.log(color+1);
             this.boxesByColor[color] = layer.createFromTiles(color+1, 0, {key:'tiles', frame:color})
                 .map(box => box.setOrigin(0));
             const switchColor = boxToSwitchColor(color);
@@ -277,30 +275,40 @@ export default class Game extends Phaser.Scene
                         if (otherHalf) {
                             if (otherHalf.color === lookingFor) {
                                 targets.push(otherHalf.box);
-                                console.dir(targets);    
                             }
                         }
                     });
                 }
             }
-            console.dir(targets);
             // Make sure the box isn't against a wall or another box
             const twoTilesOver = this.offsetPosition(targetX, targetY, direction);
             const twoTilesOverX = twoTilesOver[0];
             const twoTilesOverY = twoTilesOver[1];
+            let blocked = false; // apparently anon funcs don't return outside their contexts
             if (targets.length === 1) {
                 if (this.isWallAt(twoTilesOverX, twoTilesOverY) || this.getBoxAt(twoTilesOverX, twoTilesOverY)) {
-                    return false;
+                    blocked = true;
                 }
-            } 
-            // else if (targets.length === 2) {
-            //     // TODO handle big box collision handling
-            //     const threeTilesOver = this.offsetPosition(twoTilesOverX, twoTilesOverY)
-            //     if (this.getBoxAt(twoTilesOverX, twoTilesOverY)) {
-
-            //     }
-            // }
-            
+            }
+            else if (targets.length === 2) { // 2 tile large boxes
+                // Check the direction vector for each piece of the box
+                targets.forEach(box => {
+                    const nextTileOver = this.offsetPosition(box.x+32, box.y+32, direction);
+                    if (this.isWallAt(nextTileOver[0], nextTileOver[1])) {
+                        blocked = true;
+                    }
+                    const potentialBox = this.getBoxAt(nextTileOver[0], nextTileOver[1]);
+                    if (potentialBox) {
+                        // If there's a DIFFERENT box here, we're blocked.
+                        if (potentialBox.color !== lookingFor) {
+                            blocked = true;
+                        }
+                    }
+                });
+            }
+            if (blocked) {
+                return false;
+            }
             // Is the box already covering a same-colored switch?
             const switchColor = boxToSwitchColor(boxColor);
             const coveredSwitch = this.isTileAt(targets[0].x, targets[0].y, switchColor);
@@ -346,7 +354,7 @@ export default class Game extends Phaser.Scene
             onComplete: () => { // using a lambda
                 this.player?.anims?.pause(this.player?.anims?.currentFrame);
                 this.movesCount += 1;
-                console.log(this.movesCount);
+                // console.log(this.movesCount);
                 this.sound.stopByKey('error');
             }
         });
