@@ -139,6 +139,7 @@ export default class Game extends Phaser.Scene
                 volume: 0.3
             });
         }
+        console.dir(this.switchesCoveredByColor);
     }
 
 
@@ -273,6 +274,7 @@ export default class Game extends Phaser.Scene
                     offsets.forEach(coord => {
                         const otherHalf = this.getBoxAt(targetX+coord[0], targetY+coord[1]);
                         if (otherHalf) {
+                            // NOTE! Could cause a bug if a box of the same type is adjacent.
                             if (otherHalf.color === lookingFor) {
                                 targets.push(otherHalf.box);
                             }
@@ -280,7 +282,7 @@ export default class Game extends Phaser.Scene
                     });
                 }
             }
-            // Make sure the box isn't against a wall or another box
+            // Make sure the box(es) isn't against a wall or another box
             const twoTilesOver = this.offsetPosition(targetX, targetY, direction);
             const twoTilesOverX = twoTilesOver[0];
             const twoTilesOverY = twoTilesOver[1];
@@ -290,7 +292,7 @@ export default class Game extends Phaser.Scene
                     blocked = true;
                 }
             }
-            else if (targets.length === 2) { // 2 tile large boxes
+            else if (targets.length === 2) { // 2-tile-large boxes
                 // Check the direction vector for each piece of the box
                 targets.forEach(box => {
                     const nextTileOver = this.offsetPosition(box.x+32, box.y+32, direction);
@@ -311,9 +313,18 @@ export default class Game extends Phaser.Scene
             }
             // Is the box already covering a same-colored switch?
             const switchColor = boxToSwitchColor(boxColor);
-            const coveredSwitch = this.isTileAt(targets[0].x, targets[0].y, switchColor);
+            // const coveredSwitch = this.isTileAt(targets[0].x, targets[0].y, switchColor);
+            let coveredSwitch = false;
+            let numCovered = 0;
+            targets.forEach(box => {
+                if (this.isTileAt(box.x, box.y, switchColor)) {
+                    coveredSwitch = true;
+                    numCovered++;
+                }
+            });
             if (coveredSwitch) {
-                this.changeSwitchCoveredCount(switchColor, -1);
+                console.log(numCovered);
+                this.changeSwitchCoveredCount(switchColor, -numCovered);
             }
             // Move the box(es)
             targets.forEach(box => {
@@ -331,7 +342,8 @@ export default class Game extends Phaser.Scene
                         if (this.allSwitchesCovered()) {
                             // Level complete! Start next level
                             if (this.currentLevel < levels.getNumLevels()) {
-                                this.scene.start('game', { level: this.currentLevel+1 })
+                                console.log("WINNER!");
+                                // this.scene.start('game', { level: this.currentLevel+1 })
                             } else {
                                 console.log('No more levels');
                             }
@@ -370,8 +382,10 @@ export default class Game extends Phaser.Scene
             if (!(boxColor in this.boxesByColor)) {
                 continue;
             }
+            TODO include Big orange boxes in this count below somehow!
             const numBoxes = this.boxesByColor[boxColor].length;
             const numCovered = this.switchesCoveredByColor[switchColor];
+            console.log(numCovered, numBoxes);
             if (numCovered < numBoxes) {
                 return false;
             }

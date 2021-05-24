@@ -11,8 +11,10 @@ const SWITCH_GREEN = 64;
 const SWITCH_GREY = 77;
 
 const Big = {
-    ORANGE_1: 104,
-    ORANGE_2: 105
+    ORANGE_WIDE_1: 104,
+    ORANGE_WIDE_2: 105,
+    ORANGE_TALL_1: 117,
+    ORANGE_TALL_2: 130
 };
 
 export {
