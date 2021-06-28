@@ -11,6 +11,7 @@ export default class Game extends Phaser.Scene
     private layer?:Phaser.Tilemaps.TilemapLayer;
     private boxesByColor: { [key:number]: Phaser.GameObjects.Sprite[] } = {};
     private switchesCoveredByColor: { [key:number]: number } = {};
+    private allSwitches: { [key:number]: number } = {};
     private movesCount = 0;
 
     private currentLevel = 0; // re-assigned below
@@ -93,8 +94,8 @@ export default class Game extends Phaser.Scene
             repeat: -1
         });
 
-        // BOXES
         this.extractBoxes(this.layer);
+        this.countSwitches(this.layer);
 
         // text for movesCount or allSwitchesCovered would go here!
 
@@ -128,6 +129,35 @@ export default class Game extends Phaser.Scene
     }
 
 
+    private countSwitches(layer:Phaser.Tilemaps.TilemapLayer)
+    {
+        // Iterate over all tiles and count all the switches
+        const switchColors = [
+            Colors.SWITCH_ORANGE,
+            Colors.SWITCH_RED,
+            Colors.SWITCH_BLUE,
+            Colors.SWITCH_GREEN,
+            Colors.SWITCH_GREY
+        ];
+        switchColors.forEach(color => {
+            this.allSwitches[color] = 0;
+        });
+        const layerData = layer.layer;
+        const tiles = layerData.data;
+        for (let i=0; i<layerData.height; ++i) {
+            for (let j=0; j<layerData.width; ++j) {
+                const tile = tiles[i][j];
+                // +1 to the index to adjust for Tiled
+                for (let color of switchColors) {
+                    if (color === tile.index-1) {
+                        this.allSwitches[tile.index-1] += 1;
+                    }
+                }
+            }
+        }
+    }
+
+
     private changeSwitchCoveredCount(color:number, change:number)
     {
         if (!(color in this.switchesCoveredByColor)) {
@@ -139,7 +169,6 @@ export default class Game extends Phaser.Scene
                 volume: 0.3
             });
         }
-        console.dir(this.switchesCoveredByColor);
     }
 
 
@@ -323,7 +352,6 @@ export default class Game extends Phaser.Scene
                 }
             });
             if (coveredSwitch) {
-                console.log(numCovered);
                 this.changeSwitchCoveredCount(switchColor, -numCovered);
             }
             // Move the box(es)
@@ -343,7 +371,7 @@ export default class Game extends Phaser.Scene
                             // Level complete! Start next level
                             if (this.currentLevel < levels.getNumLevels()) {
                                 console.log("WINNER!");
-                                // this.scene.start('game', { level: this.currentLevel+1 })
+                                this.scene.start('game', { level: this.currentLevel+1 })
                             } else {
                                 console.log('No more levels');
                             }
@@ -375,18 +403,12 @@ export default class Game extends Phaser.Scene
 
     private allSwitchesCovered()
     {
+        // Check if # of covered switches matches total # of switches.
+        // Because Big boxes mean there can be more boxes than switches.
         const switchColors = Object.keys(this.switchesCoveredByColor);
         for (let i=0; i<switchColors.length; ++i) {
-            const switchColor = parseInt(switchColors[i]);
-            const boxColor = switchToBoxColor(switchColor);
-            if (!(boxColor in this.boxesByColor)) {
-                continue;
-            }
-            TODO include Big orange boxes in this count below somehow!
-            const numBoxes = this.boxesByColor[boxColor].length;
-            const numCovered = this.switchesCoveredByColor[switchColor];
-            console.log(numCovered, numBoxes);
-            if (numCovered < numBoxes) {
+            const color = parseInt(switchColors[i]);
+            if (this.switchesCoveredByColor[color] !== this.allSwitches[color]) {
                 return false;
             }
         }

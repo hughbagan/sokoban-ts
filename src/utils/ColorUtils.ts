@@ -27,15 +27,17 @@ const switchToBoxColor = (switchColor: number) => {
     switch (switchColor) {
         default:
         case Color.SWITCH_ORANGE:
-            return Color.BOX_ORANGE;
+            return [Color.BOX_ORANGE, 
+                    Color.Big.ORANGE_WIDE_1, Color.Big.ORANGE_WIDE_2,
+                    Color.Big.ORANGE_TALL_1, Color.Big.ORANGE_TALL_2];
         case Color.SWITCH_RED:
-            return Color.BOX_RED;
+            return [Color.BOX_RED];
         case Color.SWITCH_BLUE:
-            return Color.BOX_BLUE;
+            return [Color.BOX_BLUE];
         case Color.SWITCH_GREEN:
-            return Color.BOX_GREEN;
+            return [Color.BOX_GREEN];
         case Color.SWITCH_GREY:
-            return Color.BOX_GREY;
+            return [Color.BOX_GREY];
     }
 };
 
