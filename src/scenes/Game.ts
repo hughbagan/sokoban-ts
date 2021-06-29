@@ -126,6 +126,8 @@ export default class Game extends Phaser.Scene
             const switchColor = boxToSwitchColor(color);
             this.switchesCoveredByColor[switchColor] = 0;
         });
+        // There are no white boxes, so we can just do this
+        this.switchesCoveredByColor[Colors.SWITCH_WHITE] = 0;
     }
 
 
@@ -137,7 +139,8 @@ export default class Game extends Phaser.Scene
             Colors.SWITCH_RED,
             Colors.SWITCH_BLUE,
             Colors.SWITCH_GREEN,
-            Colors.SWITCH_GREY
+            Colors.SWITCH_GREY,
+            Colors.SWITCH_WHITE
         ];
         switchColors.forEach(color => {
             this.allSwitches[color] = 0;
@@ -341,12 +344,17 @@ export default class Game extends Phaser.Scene
                 return false;
             }
             // Is the box already covering a same-colored switch?
-            const switchColor = boxToSwitchColor(boxColor);
+            let switchColor = boxToSwitchColor(boxColor);
             // const coveredSwitch = this.isTileAt(targets[0].x, targets[0].y, switchColor);
             let coveredSwitch = false;
             let numCovered = 0;
             targets.forEach(box => {
-                if (this.isTileAt(box.x, box.y, switchColor)) {
+                if (this.isTileAt(box.x, box.y, Colors.SWITCH_WHITE)) {
+                    coveredSwitch = true;
+                    numCovered++;
+                    switchColor = Colors.SWITCH_WHITE;
+                }
+                else if (this.isTileAt(box.x, box.y, switchColor)) {
                     coveredSwitch = true;
                     numCovered++;
                 }
@@ -364,7 +372,10 @@ export default class Game extends Phaser.Scene
                     onComplete: () => {
                         // Check whether the box is over a same-colored switch
                         const coveredSwitch = this.isTileAt(box.x, box.y, switchColor);
-                        if (coveredSwitch) {
+                        if (this.isTileAt(box.x, box.y, Colors.SWITCH_WHITE)) {
+                            this.changeSwitchCoveredCount(Colors.SWITCH_WHITE, 1);
+                        }
+                        else if (coveredSwitch) {
                             this.changeSwitchCoveredCount(switchColor, 1);
                         }
                         if (this.allSwitchesCovered()) {

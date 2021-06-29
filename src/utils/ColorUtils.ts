@@ -3,7 +3,6 @@ import * as Color from "../consts/Color";
 
 const boxToSwitchColor = (boxColor: number) => {
     switch (boxColor) {
-        default: // could cause a bug
         case Color.BOX_ORANGE:
         case Color.Big.ORANGE_WIDE_1:
         case Color.Big.ORANGE_WIDE_2:
@@ -18,6 +17,8 @@ const boxToSwitchColor = (boxColor: number) => {
             return Color.SWITCH_GREEN;
         case Color.BOX_GREY:
             return Color.SWITCH_GREY;
+        default: // could cause a bug
+            return Color.SWITCH_WHITE;
     }
 };
 
@@ -38,6 +39,7 @@ const switchToBoxColor = (switchColor: number) => {
             return [Color.BOX_GREEN];
         case Color.SWITCH_GREY:
             return [Color.BOX_GREY];
+        // case Color.SWITCH_WHITE (return all boxes)
     }
 };
 
