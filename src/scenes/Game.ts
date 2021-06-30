@@ -46,16 +46,6 @@ export default class Game extends Phaser.Scene
 
     create(d: { level:number })
     {
-        // LEVEL
-        // const data = Object.assign({ level:1 }, d); // In lieu of a default argument
-        // this.currentLevel = data.level;
-        // const level = levels.getLevel(this.currentLevel);
-        // const map = this.make.tilemap({
-        //     data: level,
-        //     tileWidth: 64,
-        //     tileHeight: 64
-        // });
-
         const map = this.make.tilemap({ key: 'tilemap' });
         // "sokoban" is the name of the tileset in Tiled
         const tiles = map.addTilesetImage('sokoban', 'tiles');
@@ -380,12 +370,8 @@ export default class Game extends Phaser.Scene
                         }
                         if (this.allSwitchesCovered()) {
                             // Level complete! Start next level
-                            if (this.currentLevel < levels.getNumLevels()) {
-                                console.log("WINNER!");
-                                this.scene.start('game', { level: this.currentLevel+1 })
-                            } else {
-                                console.log('No more levels');
-                            }
+                            console.log("WINNER!");
+                            this.scene.start('game', { level: this.currentLevel+1 })
                         }
                     }
                 });
