@@ -358,7 +358,8 @@ export default class Game extends Phaser.Scene
                     targets: box,
                     x: tweenX,
                     y: tweenY,
-                    duration: 375,
+                    duration: 300, // ms
+                    ease: 'Linear',
                     onComplete: () => {
                         // Check whether the box is over a same-colored switch
                         const coveredSwitch = this.isTileAt(box.x, box.y, switchColor);
@@ -387,7 +388,8 @@ export default class Game extends Phaser.Scene
             targets: this.player,
             x: goto.x,
             y: goto.y,
-            duration: 400, // ms
+            duration: 300, // ms
+            ease: 'Linear',
             onComplete: () => { // using a lambda
                 this.player?.anims?.pause(this.player?.anims?.currentFrame);
                 this.movesCount += 1;
