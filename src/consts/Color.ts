@@ -16,7 +16,23 @@ const Big = {
     ORANGE_WIDE_1: 104,
     ORANGE_WIDE_2: 105,
     ORANGE_TALL_1: 117,
-    ORANGE_TALL_2: 130
+    ORANGE_TALL_2: 130,
+    RED_WIDE_1: 106,
+    RED_WIDE_2: 107,
+    RED_TALL_1: 118,
+    RED_TALL_2: 131,
+    BLUE_WIDE_1: 108,
+    BLUE_WIDE_2: 109,
+    BLUE_TALL_1: 119,
+    BLUE_TALL_2: 132,
+    GREEN_WIDE_1: 110,
+    GREEN_WIDE_2: 111,
+    GREEN_TALL_1: 120,
+    GREEN_TALL_2: 133,
+    GREY_WIDE_1: 112,
+    GREY_WIDE_2: 113,
+    GREY_TALL_1: 121,
+    GREY_TALL_2: 134
 };
 
 export {
