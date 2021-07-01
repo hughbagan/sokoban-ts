@@ -22,6 +22,6 @@ class LevelService
     }
 }
 
-const sharedInstance = new LevelService();
+const sharedLevelServ = new LevelService();
 
-export { sharedInstance };
+export { sharedLevelServ };
