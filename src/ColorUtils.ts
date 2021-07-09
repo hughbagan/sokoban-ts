@@ -1,4 +1,4 @@
-import * as Color from "../consts/Color";
+import * as Color from "./Color";
 
 
 const boxToSwitchColor = (boxColor: number) => {

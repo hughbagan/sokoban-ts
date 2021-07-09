@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import * as Colors from '../consts/Color';
-import { boxToSwitchColor, switchToBoxColor, bigBoxPartner } from '../utils/ColorUtils';
-import { levelService } from '../levels/LevelService';
+import * as Colors from '../Color';
+import { boxToSwitchColor, switchToBoxColor, bigBoxPartner } from '../ColorUtils';
+import { levelService } from '../LevelService';
 
 
 export default class Game extends Phaser.Scene

@@ -1,5 +1,5 @@
 import Phaser, { Game } from 'phaser';
-import { levelService } from '../levels/LevelService';
+import { levelService } from '../LevelService';
 
 export default class LevelSelect extends Phaser.Scene
 {
