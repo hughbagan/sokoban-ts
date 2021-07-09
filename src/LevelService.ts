@@ -3,7 +3,8 @@ class LevelService
     // A list of level filenames (without filename extension)
     private levels = [
         "1",
-        "2"
+        "2",
+        "test"
     ];
     private currentLevel:number = 0; // Current level is zero-indexed
 

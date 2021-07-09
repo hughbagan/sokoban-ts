@@ -23,7 +23,7 @@ export default class LevelSelect extends Phaser.Scene
         // Display available levels
         const allLevels = levelService.getLevels();
         const textStyle = {
-            fontSize: "50px"
+            fontSize: "30px"
         };
         for (let i=0; i<allLevels.length; ++i) {
             const levelName = allLevels[i];
