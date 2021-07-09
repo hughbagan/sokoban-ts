@@ -1,13 +1,13 @@
-import Phaser from 'phaser';
+import Phaser, { Game } from 'phaser';
+import { levelService } from '../levels/LevelService';
 
 export default class LevelSelect extends Phaser.Scene
 {
-    private levelSprites?:Phaser.GameObjects.Sprite[];
-
     constructor()
     {
         super('levelselect');
     }
+
 
     preload()
     {
@@ -17,18 +17,24 @@ export default class LevelSelect extends Phaser.Scene
         });
     }
 
+
     create()
     {
         // Display available levels
-        let sprite = this.add.sprite(128, 192, 'tiles', 39).setInteractive();
-        console.log(sprite.width, sprite.height);
+        const allLevels = levelService.getLevels();
         const textStyle = {
             fontSize: "50px"
         };
-        let sprite_text = this.add.text(sprite.x, sprite.y, "1", textStyle).setOrigin(0.5);
-        this.levelSprites?.push(sprite);
-        sprite.on('pointerdown', (obj:Phaser.GameObjects.Sprite) => {
-            this.scene.start('preloader', { level: 1 });
-        });
+        for (let i=0; i<allLevels.length; ++i) {
+            const levelName = allLevels[i];
+            const levelPath = levelService.getLevelPath(levelName);
+            const spriteX = 112+((i%4)*96);
+            const spriteY = 112+(Math.floor(i/4)*96);
+            let sprite = this.add.sprite(spriteX, spriteY, 'tiles', 39).setInteractive();
+            this.add.text(sprite.x, sprite.y, levelName, textStyle).setOrigin(0.5);
+            sprite.on('pointerdown', () => {
+                this.scene.start('preloader', { level: levelPath });
+            });
+        }
     }
 };

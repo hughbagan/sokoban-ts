@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import * as Colors from '../consts/Color';
 import { boxToSwitchColor, switchToBoxColor, bigBoxPartner } from '../utils/ColorUtils';
+import { levelService } from '../levels/LevelService';
 
-import { sharedInstance as levels } from '../levels/LevelService';
 
 export default class Game extends Phaser.Scene
 {
@@ -14,7 +14,7 @@ export default class Game extends Phaser.Scene
     private allSwitches: { [key:number]: number } = {};
     private movesCount = 0;
 
-    private currentLevel = 0; // re-assigned below
+    private levelPath:string = ""; // re-assigned below
 
 
 	constructor()
@@ -25,15 +25,17 @@ export default class Game extends Phaser.Scene
 
     init(d: { level:number })
     {
-        const data = Object.assign({ level:1 }, d); // In lieu of a default argument
-        this.currentLevel = data.level;
+        const data = Object.assign({ level:"" }, d); // In lieu of a default argument
+        this.levelPath = data.level;
+        levelService.setCurrentLevel(levelService.pathToIndex(data.level));
+        console.log(levelService.getCurrentLevel());
         this.movesCount = 0;
     }
 
 
 	preload()
     {
-        this.load.tilemapTiledJSON('tilemap', `assets/levels/level${this.currentLevel}.json`);
+        this.load.tilemapTiledJSON('tilemap', this.levelPath);
 
         this.load.spritesheet('tiles', 'assets/sokoban_tilesheet.png', {
             frameWidth: 64,
@@ -372,7 +374,13 @@ export default class Game extends Phaser.Scene
                         if (this.allSwitchesCovered()) {
                             // Level complete! Start next level
                             console.log("WINNER!");
-                            this.scene.start('game', { level: this.currentLevel+1 })
+                            const currentLevel = levelService.getCurrentLevel();
+                            if (currentLevel >= levelService.getNumLevels()-1) {
+                                console.log("No more levels");
+                            } else {
+                                const nextLevelPath = levelService.indexToPath(currentLevel+1);
+                                this.scene.start('game', { level: nextLevelPath });    
+                            }
                         }
                     }
                 });

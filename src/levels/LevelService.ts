@@ -1,27 +1,58 @@
-// import level1 from './level1';
-// import level2 from './level2';
-// import level3 from './level3';
-
 class LevelService
 {
-    // TODO Rewrite this file to use the level JSONs instead.
-    // private levels = [
-    //     level1,
-    //     level2,
-    //     level3
-    // ];
+    // A list of level filenames (without filename extension)
+    private levels = [
+        "1",
+        "2"
+    ];
+    private currentLevel:number = 0; // Current level is zero-indexed
 
-    getLevel(level:number)
+
+    getLevels()
     {
-        return this.levels[level-1];
+        return this.levels;
     }
-    
+
+
     getNumLevels()
     {
         return this.levels.length;
     }
+
+
+    getLevelPath(levelName:string)
+    {
+        return `assets/levels/${levelName}.json`;
+    }
+
+
+    indexToPath(levelIndex:number)
+    {
+        const levelName = this.levels[levelIndex];
+        return this.getLevelPath(levelName);
+    }
+
+
+    pathToIndex(levelPath:string)
+    {
+        // Assuming the path matches what's in getLevelPath()
+        const levelName = levelPath.replace("assets/levels/", "").replace(".json", "");
+        return this.levels.indexOf(levelName);
+    }
+
+
+    getCurrentLevel()
+    {
+        return this.currentLevel;
+    }
+
+
+    setCurrentLevel(newLevelIndex:number)
+    {
+        this.currentLevel = newLevelIndex;
+    }
 }
 
-const sharedLevelServ = new LevelService();
+const levelService = new LevelService();
 
-export { sharedLevelServ };
+export { levelService };
