@@ -374,13 +374,7 @@ export default class Game extends Phaser.Scene
                         if (this.allSwitchesCovered()) {
                             // Level complete! Start next level
                             console.log("WINNER!");
-                            const currentLevel = levelService.getCurrentLevel();
-                            if (currentLevel >= levelService.getNumLevels()-1) {
-                                console.log("No more levels");
-                            } else {
-                                const nextLevelPath = levelService.indexToPath(currentLevel+1);
-                                this.scene.start('game', { level: nextLevelPath });    
-                            }
+                            this.nextLevel();
                         }
                     }
                 });
@@ -403,6 +397,13 @@ export default class Game extends Phaser.Scene
                 this.movesCount += 1;
                 // console.log(this.movesCount);
                 this.sound.stopByKey('error');
+                // Check to see if we're on the exit
+                if (this.player) {
+                    if (this.isTileAt(this.player.x, this.player.y, 116)) {
+                        console.log("Exit reached!");
+                        this.nextLevel();
+                    }
+                }
             }
         });
     }
@@ -420,6 +421,18 @@ export default class Game extends Phaser.Scene
             }
         }
         return true;
+    }
+
+
+    private nextLevel()
+    {
+        const currentLevel = levelService.getCurrentLevel();
+        if (currentLevel >= levelService.getNumLevels()-1) {
+            console.log("No more levels");
+        } else {
+            const nextLevelPath = levelService.indexToPath(currentLevel+1);
+            this.scene.start('game', { level: nextLevelPath });    
+        }
     }
 
 
